@@ -6,40 +6,53 @@ using Newtonsoft.Json.Serialization;
 using Xbim.Ifc;
 using Xbim.Ifc4.Interfaces;
 
-namespace XeokitMetadata {
-  /// <summary>
-  ///   The MetaObject is used to serialise the building elements within the IFC
-  ///   model. It is a representation of a single element (e.g. IfcProject,
-  ///   IfcStorey, IfcWindow, etc.).
-  /// </summary>
-  public struct MetaObject {
+namespace XeokitMetadata
+{
     /// <summary>
-    ///   The GlobalId of the building element
+    ///   The MetaObject is used to serialise the building elements within the IFC
+    ///   model. It is a representation of a single element (e.g. IfcProject,
+    ///   IfcStorey, IfcWindow, etc.).
     /// </summary>
-    public string id;
+    public struct MetaObject
+    {
+        /// <summary>
+        ///   The GlobalId of the building element
+        /// </summary>
+        public string id;
 
-    /// <summary>
-    ///   The Name of the building element
-    /// </summary>
-    public string name;
+        /// <summary>
+        ///   The Name of the building element
+        /// </summary>
+        public string name;
 
-    /// <summary>
-    ///   The IFC type of the building element, e.g. 'IfcStandardWallCase'
-    /// </summary>
-    public string type;
+        /// <summary>
+        ///   The IFC type of the building element, e.g. 'IfcStandardWallCase'
+        /// </summary>
+        public string type;
 
-    /// <summary>
-    ///   The GlobalId of the parent element if any.
-    /// </summary>
-    public string parent;
-  }
+        /// <summary>
+        ///   The GlobalId of the parent element if any.
+        /// </summary>
+        public string parent;
+        /// <summary>
+        ///   Properties, the parameter name-value exported from revit for each element in the IFC
+        /// </summary>
+        public List<PropertyIfc> Properties;
+    }
+}
+public struct PropertyIfc
+{
+    public string Name;
+    public string Value;
+}
 
-  /// <summary>
-  ///   The MetaModel is used to serialise the building elements within the IFC
-  ///   model. It is the representation of the complete JSON version of the
-  ///   structure.
-  /// </summary>
-  public struct MetaModel {
+/// <summary>
+///   The MetaModel is used to serialise the building elements within the IFC
+///   model. It is the representation of the complete JSON version of the
+///   structure.
+/// </summary>
+public struct MetaModel
+{
     /// <summary>
     ///   Initializes `MetaModel` instance.
     /// </summary>
@@ -55,15 +68,16 @@ namespace XeokitMetadata {
       string author,
       string createdAt,
       string schema,
-      string creatingApplication){
-      this.id = id;
-      this.projectId = projectId;
-      this.author = author;
-      this.createdAt = createdAt;
-      this.schema = schema;
-      this.creatingApplication = creatingApplication;
+      string creatingApplication)
+    {
+        this.id = id;
+        this.projectId = projectId;
+        this.author = author;
+        this.createdAt = createdAt;
+        this.schema = schema;
+        this.creatingApplication = creatingApplication;
     }
-    
+
     /// <summary>
     ///   The Id field is populated with the name of the project.
     /// </summary>
@@ -88,7 +102,7 @@ namespace XeokitMetadata {
     ///   The schema of the ifc model.
     /// </summary>
     public string schema;
-    
+
     /// <summary>
     ///   The application with which the model was created.
     /// </summary>
@@ -98,32 +112,34 @@ namespace XeokitMetadata {
     ///   A list of all building elements as MetaObjects within the project.
     /// </summary>
     public List<MetaObject> metaObjects;
-    
+
     /// <summary>
     ///   The convenience initialiser creates and returns an instance of the
     ///   MetaModel by parsing the IFC at the provided path.
     /// </summary>
     /// <param name="ifcPath">A string path of the IFC path.</param>
     /// <returns>Returns the complete MetaModel of the IFC.</returns>
-    public static MetaModel fromIfc(string ifcPath) {
-      using (var model = IfcStore.Open(ifcPath)) {
+    public static MetaModel fromIfc(string ifcPath)
+    {
+        using (var model = IfcStore.Open(ifcPath))
+        {
 
-        var project = model.Instances.FirstOrDefault<IIfcProject>();
+            var project = model.Instances.FirstOrDefault<IIfcProject>();
 
-        var header = model.Header;
-        var metaModel = new MetaModel();
-        metaModel.init(
-          project.Name,
-          project.GlobalId,
-          getAuthor(header.FileName.AuthorName),
-          header.TimeStamp,
-          header.SchemaVersion,
-          header.CreatingApplication);
+            var header = model.Header;
+            var metaModel = new MetaModel();
+            metaModel.init(
+              project.Name,
+              project.GlobalId,
+              getAuthor(header.FileName.AuthorName),
+              header.TimeStamp,
+              header.SchemaVersion,
+              header.CreatingApplication);
 
-        var metaObjects = extractHierarchy(project);
-        metaModel.metaObjects = metaObjects;
-        return metaModel;
-      }
+            var metaObjects = extractHierarchy(project);
+            metaModel.metaObjects = metaObjects;
+            return metaModel;
+        }
     }
 
     /// <summary>
@@ -132,15 +148,17 @@ namespace XeokitMetadata {
     /// </summary>
     /// <param name="authors">List of authors.</param>
     /// <returns>Authors names.</returns>
-    private static string getAuthor(IList<string> authors){
-      var author = "";
-      foreach (var item in authors) {
-        author += item;
-        //separator of authors
-        if (!item.Equals(authors.Last()))
-          author += ";";
-      }
-      return author;
+    private static string getAuthor(IList<string> authors)
+    {
+        var author = "";
+        foreach (var item in authors)
+        {
+            author += item;
+            //separator of authors
+            if (!item.Equals(authors.Last()))
+                author += ";";
+        }
+        return author;
     }
 
     /// <summary>
@@ -156,48 +174,57 @@ namespace XeokitMetadata {
     ///   IIfcObjectDefinition.
     /// </returns>
     private static List<MetaObject> extractHierarchy(
-      IIfcObjectDefinition objectDefinition, 
-      string parentId=null) {
-      var metaObjects = new List<MetaObject>();
+      IIfcObjectDefinition objectDefinition,
+      string parentId = null)
+    {
+        var metaObjects = new List<MetaObject>();
 
-      var parentObject = new MetaObject {
-        id = objectDefinition.GlobalId,
-        name = objectDefinition.Name,
-        type = objectDefinition.GetType().Name,
-        parent = parentId
-      };
+        var parentObject = new MetaObject
+        {
+            id = objectDefinition.GlobalId,
+            name = objectDefinition.Name,
+            type = objectDefinition.GetType().Name,
+            parent = parentId
+        };
 
-      metaObjects.Add(parentObject);
+        metaObjects.Add(parentObject);
 
-      var spatialElement = objectDefinition as IIfcSpatialStructureElement;
+        var spatialElement = objectDefinition as IIfcSpatialStructureElement;
 
-      if (spatialElement != null) {
-        var containedElements = spatialElement
-          .ContainsElements
-          .SelectMany(rel => rel.RelatedElements);
+        if (spatialElement != null)
+        {
+            var containedElements = spatialElement
+              .ContainsElements
+              .SelectMany(rel => rel.RelatedElements);
 
-        foreach (var element in containedElements) {
-          var mo = new MetaObject {
-            id = element.GlobalId,
-            name = element.Name,
-            type = element.GetType().Name,
-            parent = spatialElement.GlobalId
-          };
-          
-          metaObjects.Add(mo);
-          extractRelatedObjects(
-            element, 
-            ref metaObjects, 
-            mo.id);
+            foreach (var element in containedElements)
+            {
+                var mo = new MetaObject
+                {
+                    id = element.GlobalId,
+                    name = element.Name,
+                    type = element.GetType().Name,
+                    parent = spatialElement.GlobalId
+                };
+                List<PropertyIfc> pIfc = getProperties(element);
+                if (pIfc != null && pIfc.Count > 0)
+                {
+                    mo.Properties = pIfc;
+                }
+                metaObjects.Add(mo);
+                extractRelatedObjects(
+                  element,
+                  ref metaObjects,
+                  mo.id);
+            }
         }
-      }
 
-      extractRelatedObjects(
-        objectDefinition, 
-        ref metaObjects, 
-        parentObject.id);
-      
-      return metaObjects;
+        extractRelatedObjects(
+          objectDefinition,
+          ref metaObjects,
+          parentObject.id);
+
+        return metaObjects;
     }
 
     /// <summary>
@@ -212,17 +239,61 @@ namespace XeokitMetadata {
     /// <param name="parentObjId">Id of parent object.</param>
     private static void extractRelatedObjects(
       IIfcObjectDefinition objectDefinition,
-      ref List<MetaObject> metaObjects, 
-      string parentObjId){
-      
-      var relatedObjects = objectDefinition
-        .IsDecomposedBy
-        .SelectMany(r => r.RelatedObjects);
+      ref List<MetaObject> metaObjects,
+      string parentObjId)
+    {
 
-      foreach (var item in relatedObjects) {
-        var children = extractHierarchy(item, parentObjId);
-        metaObjects.AddRange(children);
-      }
+        var relatedObjects = objectDefinition
+          .IsDecomposedBy
+          .SelectMany(r => r.RelatedObjects);
+
+        foreach (var item in relatedObjects)
+        {
+            var children = extractHierarchy(item, parentObjId);
+            metaObjects.AddRange(children);
+        }
+    }
+
+    private static List<PropertyIfc> getProperties(IIfcProduct element)
+    {
+        List<PropertyIfc> outList = new List<PropertyIfc>();
+
+        IEnumerable<IIfcRelDefinesByProperties> relations = element.IsDefinedBy.OfType<IIfcRelDefinesByProperties>();
+        foreach (IIfcRelDefinesByProperties rel in relations)
+        {
+            IIfcPropertySet pSet = rel.RelatingPropertyDefinition as IIfcPropertySet;
+            if (pSet == null)
+            {
+                continue;
+            }
+
+            foreach (Object propcheck in pSet.HasProperties)
+            {
+                IIfcPropertySingleValue prop = null;
+                try
+                {
+                    prop = propcheck as IIfcPropertySingleValue;
+                }
+                catch (InvalidCastException ice)
+                {
+                    continue;
+                }
+
+                if (prop == null || prop.NominalValue == null)
+                {
+                    continue;
+                }
+
+                outList.Add(new PropertyIfc
+                {
+                    Name = prop.Name,
+                    Value = prop.NominalValue.ToString()
+                });
+            }
+
+        }
+
+        return outList.Count > 0 ? outList : null;
     }
 
     /// <summary>
@@ -235,28 +306,33 @@ namespace XeokitMetadata {
     /// <param name="jsonPath">
     ///   The path of the output JSON file.
     /// </param>
-    public void toJson(string jsonPath) {
-      using (var outputFile = new StreamWriter(jsonPath)) {
-        outputFile.Write(serialize());
-      }
+    public void toJson(string jsonPath)
+    {
+        using (var outputFile = new StreamWriter(jsonPath))
+        {
+            outputFile.Write(serialize());
+        }
     }
 
     /// <summary>
     ///   The method serialises the MetaModel object to a JSON string.
     /// </summary>
     /// <returns>Returns the serialized JSON string.</returns>
-    public string serialize(){
-      var contractResolver = new DefaultContractResolver {
-        NamingStrategy = new CamelCaseNamingStrategy()
-      };
-      
-      var settings = new JsonSerializerSettings {
-        ContractResolver = contractResolver,
-        Formatting = Formatting.Indented
-      };
-      
-      var output = JsonConvert.SerializeObject(this, settings);
-      return output;
+    public string serialize()
+    {
+        var contractResolver = new DefaultContractResolver
+        {
+            NamingStrategy = new CamelCaseNamingStrategy()
+        };
+
+        var settings = new JsonSerializerSettings
+        {
+            ContractResolver = contractResolver,
+            Formatting = Formatting.Indented
+        };
+
+        var output = JsonConvert.SerializeObject(this, settings);
+        return output;
     }
-  }
+}
 }
