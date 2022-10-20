@@ -11,6 +11,7 @@
         <PackageProjectUrl>https://github.com/bimspot/xeokit-metadata</PackageProjectUrl>
         <PackageLicenseUrl>https://github.com/bimspot/xeokit-metadata/LICENSE</PackageLicenseUrl>
         <RepositoryUrl>https://github.com/bimspot/xeokit-metadata</RepositoryUrl>
+        <StartupObject>XeokitMetadata.Program</StartupObject>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
