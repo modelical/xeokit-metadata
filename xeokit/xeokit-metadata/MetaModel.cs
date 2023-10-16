@@ -38,12 +38,12 @@ namespace XeokitMetadata {
     /// <summary>
     ///   Properties, the parameter name-value exported from revit for each element in the IFC
     /// </summary>
-    public List<PropertyIfc> Properties;
+    public List<PropertyIfc> properties;
   }
 
   public struct PropertyIfc {
-    public string Name;
-    public string Value;
+    public string name;
+    public string value;
   }
 
   /// <summary>
@@ -197,9 +197,9 @@ namespace XeokitMetadata {
           };
           List<PropertyIfc> pIfc = getProperties(element);
           if (pIfc != null && pIfc.Count > 0) {
-            mo.Properties = pIfc;
+            mo.properties = pIfc;
           }
-          mo.Properties.Add(new PropertyIfc { Name="IFC_location", Value=element.ObjectPlacement.ToMatrix3D().ToString()});
+          mo.properties.Add(new PropertyIfc { name="IFC_location", value=element.ObjectPlacement.ToMatrix3D().ToString()});
           metaObjects.Add(mo);
           extractRelatedObjects(
             element, 
@@ -253,8 +253,8 @@ namespace XeokitMetadata {
 
           outList.Add(new PropertyIfc
           {
-            Name = prop.Name,
-            Value = prop.NominalValue.ToString()
+            name = prop.Name,
+            value = prop.NominalValue.ToString()
           });
         }
 
