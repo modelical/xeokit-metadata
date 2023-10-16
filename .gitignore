@@ -4,3 +4,5 @@ obj
 *.zip
 *.tar.gz
 xeokit/xeokit.sln.DotSettings.user
+.vs/
+*.user
