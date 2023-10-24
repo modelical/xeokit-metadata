@@ -11,12 +11,15 @@
         <PackageProjectUrl>https://github.com/bimspot/xeokit-metadata</PackageProjectUrl>
         <PackageLicenseUrl>https://github.com/bimspot/xeokit-metadata/LICENSE</PackageLicenseUrl>
         <RepositoryUrl>https://github.com/bimspot/xeokit-metadata</RepositoryUrl>
+        <StartupObject>XeokitMetadata.Program</StartupObject>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
       <PlatformTarget>AnyCPU</PlatformTarget>
     </PropertyGroup>
-
+    <PropertyGroup>
+        <RuntimeIdentifiers>win10-x64;osx.10.12-x64;debian.8-x64</RuntimeIdentifiers>
+    </PropertyGroup>
     <ItemGroup>
       <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
       <PackageReference Include="Xbim.Essentials" Version="5.1.341" />

@@ -1,9 +1,11 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using Xbim.Ifc;
+using Xbim.Ifc.Extensions;
 using Xbim.Ifc4.Interfaces;
 
 namespace XeokitMetadata {
@@ -32,6 +34,16 @@ namespace XeokitMetadata {
     ///   The GlobalId of the parent element if any.
     /// </summary>
     public string parent;
+
+    /// <summary>
+    ///   Properties, the parameter name-value exported from revit for each element in the IFC
+    /// </summary>
+    public List<PropertyIfc> properties;
+  }
+
+  public struct PropertyIfc {
+    public string name;
+    public string value;
   }
 
   /// <summary>
@@ -183,7 +195,11 @@ namespace XeokitMetadata {
             type = element.GetType().Name,
             parent = spatialElement.GlobalId
           };
-          
+          List<PropertyIfc> pIfc = getProperties(element);
+          if (pIfc != null && pIfc.Count > 0) {
+            mo.properties = pIfc;
+          }
+          mo.properties.Add(new PropertyIfc { name="IFC_location", value=element.ObjectPlacement.ToMatrix3D().ToString()});
           metaObjects.Add(mo);
           extractRelatedObjects(
             element, 
@@ -198,6 +214,53 @@ namespace XeokitMetadata {
         parentObject.id);
       
       return metaObjects;
+    }
+
+    /// <summary>
+    /// Method to add the element properties to the JSON
+    /// </summary>
+    /// <param name="element"></param>
+    /// <returns></returns>
+    private static List<PropertyIfc> getProperties(IIfcProduct element)
+    {
+      List<PropertyIfc> outList = new List<PropertyIfc>();
+
+      IEnumerable<IIfcRelDefinesByProperties> relations = element.IsDefinedBy.OfType<IIfcRelDefinesByProperties>();
+      foreach (IIfcRelDefinesByProperties rel in relations)
+      {
+        IIfcPropertySet pSet = rel.RelatingPropertyDefinition as IIfcPropertySet;
+        if (pSet == null)
+        {
+          continue;
+        }
+
+        foreach (Object propcheck in pSet.HasProperties)
+        {
+          IIfcPropertySingleValue prop = null;
+          try
+          {
+            prop = propcheck as IIfcPropertySingleValue;
+          }
+          catch (InvalidCastException ice)
+          {
+            continue;
+          }
+
+          if (prop == null || prop.NominalValue == null)
+          {
+            continue;
+          }
+
+          outList.Add(new PropertyIfc
+          {
+            name = prop.Name,
+            value = prop.NominalValue.ToString()
+          });
+        }
+
+      }
+
+      return outList.Count > 0 ? outList : null;
     }
 
     /// <summary>
